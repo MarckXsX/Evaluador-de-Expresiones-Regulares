@@ -1,5 +1,4 @@
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 public class Automata {
     private Estado estadoInicial;
@@ -9,56 +8,33 @@ public class Automata {
     }
 
     public boolean evaluar(String palabra) {
-        Set<Estado> estadosActuales = new HashSet<>();
-        estadosActuales.add(estadoInicial);
-        return evaluarDesdeEstados(estadosActuales, palabra, 0);
+        return evaluarDesdeEstado(estadoInicial, palabra, 0);
     }
 
-    private boolean evaluarDesdeEstados(Set<Estado> estadosActuales, String palabra, int posicion) {
-        Set<Estado> nuevosEstados = new HashSet<>();
+    private boolean evaluarDesdeEstado(Estado estadoActual, String palabra, int posicion) {
+        // Si se ha llegado al final de la palabra
+        if (posicion == palabra.length()) {
+            // Devuelve true solo si el estado actual es final
+            return estadoActual.esEstadoFinal();
+        }
 
-        // Proceso de transición para cada estado actual
-        for (Estado estado : estadosActuales) {
-            // Evaluar transiciones ε
-            if (hayTransicionesEpsilon(estado)) {
-                nuevosEstados.addAll(obtenerEstadosEpsilon(estado));
-            }
-
-            if (posicion < palabra.length()) {
-                for (Transicion transicion : estado.getTransiciones()) {
-                    if (transicion.getSimbolo() == null) continue; // Ignorar transiciones ε
-
-                    if (transicion.getSimbolo().equals(palabra.charAt(posicion))) {
-                        nuevosEstados.add(transicion.getEstadoDestino());
-                    }
+        // Itera a través de las transiciones del estado actual
+        for (Transicion transicion : estadoActual.getTransiciones()) {
+            // Comprueba si la transición es ε o si coincide con el carácter actual
+            if (transicion.getSimbolo() == 'ε' || transicion.getSimbolo().equals(palabra.charAt(posicion))) {
+                // Llama recursivamente a la función
+                if (evaluarDesdeEstado(transicion.getEstadoDestino(), palabra, posicion + (transicion.getSimbolo() == 'ε' ? 0 : 1))) {
+                    return true; // Si se encuentra un camino válido, devuelve true
                 }
             }
         }
 
-        // Verificar si hay un estado final alcanzado
-        boolean hayEstadoFinal = nuevosEstados.stream().anyMatch(Estado::esEstadoFinal);
-
-        // Si se ha llegado al final de la palabra
-        if (posicion == palabra.length()) {
-            return hayEstadoFinal;
-        }
-
-        // Evaluar desde los nuevos estados en la siguiente posición
-        return evaluarDesdeEstados(nuevosEstados, palabra, posicion + 1) || hayEstadoFinal;
+        return false; // Si no se encontró ningún camino válido, devuelve false
     }
 
-    private boolean hayTransicionesEpsilon(Estado estado) {
-        return estado.getTransiciones().stream().anyMatch(transicion -> transicion.getSimbolo() == null);
-    }
 
-    private Set<Estado> obtenerEstadosEpsilon(Estado estado) {
-        Set<Estado> estadosEpsilon = new HashSet<>();
-        for (Transicion transicion : estado.getTransiciones()) {
-            if (transicion.getSimbolo() == null) {
-                estadosEpsilon.add(transicion.getEstadoDestino());
-                estadosEpsilon.addAll(obtenerEstadosEpsilon(transicion.getEstadoDestino())); // Transiciones ε recursivas
-            }
-        }
-        return estadosEpsilon;
+    private boolean hayTransiciones(Estado estado) {
+        return !estado.getTransiciones().isEmpty();
     }
 }
+

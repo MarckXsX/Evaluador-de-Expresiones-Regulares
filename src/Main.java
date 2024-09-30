@@ -8,11 +8,10 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // Introducción
         System.out.println("Bienvenido al evaluador de autómatas finitos no deterministas con transiciones ε.");
-        System.out.println("Ingrese los símbolos del alfabeto, estados, estados finales y transiciones.");
+        System.out.println("Por favor, siga las instrucciones a continuación:");
 
-        // Leer símbolos del alfabeto
+        // Leer los símbolos del alfabeto
         System.out.print("Ingrese los símbolos del alfabeto (separados por comas): ");
         String[] simbolosInput = scanner.nextLine().split(",");
         Set<Character> simbolos = new HashSet<>();
@@ -20,24 +19,24 @@ public class Main {
             simbolos.add(simbolo.trim().charAt(0));
         }
 
-        // Leer estados
-        System.out.print("Ingrese los estados (separados por comas): ");
+        // Leer los estados
+        System.out.print("Ingrese los estados (separados por comas, el primer estado será el inicial): ");
         String[] estadosInput = scanner.nextLine().split(",");
         List<Estado> estados = new ArrayList<>();
 
-        // Leer estados finales
+        // Leer los estados finales
         System.out.print("Ingrese los estados finales (separados por comas): ");
         String[] finalesInput = scanner.nextLine().split(",");
         List<String> estadosFinales = List.of(finalesInput);
 
-        // Crear estados
+        // Crear los estados
         for (String nombre : estadosInput) {
             boolean esFinal = estadosFinales.contains(nombre.trim());
-            boolean esInicial = estados.size() == 0; // Solo el primer estado es inicial
+            boolean esInicial = estados.size() == 0;
             estados.add(new Estado(nombre.trim(), esFinal, esInicial));
         }
 
-        // Leer transiciones
+        // Leer las transiciones
         List<Transicion> transiciones = new ArrayList<>();
         String transicionInput;
         System.out.println("Ingrese las transiciones (origen,símbolo,destino), una por línea. Escriba 'fin' para terminar:");
@@ -49,31 +48,38 @@ public class Main {
             }
 
             String[] partes = transicionInput.split(",");
+            if (partes.length != 3) {
+                System.out.println("Error: La transición '" + transicionInput + "' no tiene el formato correcto.");
+                continue;
+            }
+
             String origen = partes[0].trim();
-            Character simbolo = partes[1].trim().equals("ε") ? null : partes[1].trim().charAt(0);
+            Character simbolo = partes[1].trim().equals("ε") ? 'ε' : partes[1].trim().charAt(0);
             String destino = partes[2].trim();
 
             Estado estadoOrigen = estados.stream().filter(e -> e.getNombre().equals(origen)).findFirst().orElse(null);
-            Estado estadoDestino = estados.stream().filter(e -> e.getNombre().equals(destino)). findFirst().orElse(null);
+            Estado estadoDestino = estados.stream().filter(e -> e.getNombre().equals(destino)).findFirst().orElse(null);
 
-            if (estadoOrigen != null && estadoDestino != null) {
-                Transicion nuevaTransicion = new Transicion(simbolo, estadoDestino, estadoOrigen);
-                estadoOrigen.agregarTransicion(nuevaTransicion);
-                transiciones.add(nuevaTransicion);
+            if (estadoOrigen == null || estadoDestino == null) {
+                System.out.println("Error: Estado de origen o destino no definido.");
+                continue;
             }
+
+            // Agregar la transición al estado de origen
+            Transicion nuevaTransicion = new Transicion(simbolo, estadoDestino, estadoOrigen);
+            estadoOrigen.agregarTransicion(nuevaTransicion);
+            transiciones.add(nuevaTransicion);
         }
 
-        // Crear el autómata
+        // Determinar el estado inicial
         Estado estadoInicial = estados.stream().filter(Estado::esEstadoInicial).findFirst().orElse(null);
         Automata automata = new Automata(estadoInicial);
 
-        // Evaluar múltiples palabras
+        // Evaluar palabras
         String continuar;
         do {
-            System.out.print("Ingrese una palabra para evaluar (o 'q' para salir): ");
+            System.out.print("Ingrese una palabra para evaluar: ");
             String palabra = scanner.nextLine();
-            if (palabra.equals("q")) break;
-
             boolean resultado = automata.evaluar(palabra);
             System.out.println(resultado ? "La palabra satisface la expresión regular." : "La palabra no satisface la expresión regular.");
 
