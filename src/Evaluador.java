@@ -12,7 +12,7 @@ public class Evaluador {
     }
 
     public boolean verficarAutomata(AutomataFN automataFN){
-        if(automataFN.getInitialEstado() == null || automataFN.getFinalStates().isEmpty())return false;
+        if(automataFN.getInitialEstado() == null || automataFN.getFinalStates().isEmpty() || automataFN.getTransicions().isEmpty())return false;
         this.automataFN = automataFN;
         return true;
     }
