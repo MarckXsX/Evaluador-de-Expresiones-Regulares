@@ -64,9 +64,9 @@ public class Main {
                     }
 
                     String[] partes = transicionInput.split(",");
-                    String origen = partes[0].trim();
-                    Character simbolo = partes[1].trim().equals("ε") ? null : partes[1].trim().charAt(0);
-                    String destino = partes[2].trim();
+                    String origen = partes[0].trim().isEmpty() ? null : partes[0].trim();
+                    Character simbolo = partes[1].trim().equals("ε") || partes[1].trim().equals("") ? null : partes[1].trim().charAt(0);
+                    String destino = partes[2].trim().isEmpty() ? null : partes[2].trim();
 
                     Estado estadoOrigen = automataFN.getEstados().stream().filter(e -> e.getNombre().equals(origen)).findFirst().orElse(null);
                     Estado estadoDestino = automataFN.getEstados().stream().filter(e -> e.getNombre().equals(destino)).findFirst().orElse(null);
@@ -76,6 +76,10 @@ public class Main {
                         estadoOrigen.agregarTransicion(nuevaTransicion);
                         //transiciones.add(nuevaTransicion);
                         automataFN.agregarTransiciones(nuevaTransicion);
+                    }
+                    else{
+                        System.out.println("Error en el ingreso de transiciones!");
+                        break outerLoop;
                     }
                 }
 
