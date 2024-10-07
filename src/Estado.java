@@ -33,5 +33,9 @@ public class Estado {
     public String getNombre() {
         return nombre;
     }
+
+    public void setEsEstadoFinal(boolean esEstadoFinal) {
+        this.esEstadoFinal = esEstadoFinal;
+    }
 }
 
